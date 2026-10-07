@@ -2,51 +2,73 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
+
 def predict(cgpa, skills, internship):
-    # Simple academic-project prediction logic.
-    # You can later replace this with a real ML model.
-    score = (cgpa / 10.0) * 60
 
-    skill_list = [s.strip().lower() for s in skills.split(",") if s.strip()]
-    useful = {"java", "python", "html", "sql", "communication", "excel"}
-    score += min(len(set(skill_list) & useful) * 5, 25)
+    score = 0
 
-    if internship.lower() == "yes":
-        score += 15
-
-    score = max(0, min(100, round(score)))
-
-    if score >= 80:
-        role = "Software Developer / Java Developer"
-    elif score >= 65:
-        role = "Junior Developer / Data Analyst"
+    # CGPA
+    if cgpa >= 8:
+        score += 50
+    elif cgpa >= 7:
+        score += 40
+    elif cgpa >= 6:
+        score += 30
     else:
-        role = "Trainee / Internship Recommended"
+        score += 20
 
-    return score, role
+    # Skills
+    skill_count = len(skills.split(","))
 
-@app.post("/predict")
+    if skill_count >= 3:
+        score += 30
+    elif skill_count >= 2:
+        score += 20
+    else:
+        score += 10
+
+    # Internship
+    if internship.lower() == "yes":
+        score += 20
+
+    if score >= 75:
+        result = "High Placement Probability"
+    elif score >= 55:
+        result = "Medium Placement Probability"
+    else:
+        result = "Low Placement Probability"
+
+    return score, result
+
+
+@app.route("/predict", methods=["POST"])
 def prediction():
-    data = request.get_json(silent=True) or {}
 
-    try:
-        cgpa = float(data.get("cgpa", 0))
-    except ValueError:
-        return jsonify({"error": "CGPA must be a number"}), 400
+    data = request.get_json()
 
-    if cgpa < 0 or cgpa > 10:
-        return jsonify({"error": "CGPA must be between 0 and 10"}), 400
+    cgpa = float(data.get("cgpa", 0))
+    skills = data.get("skills", "")
+    internship = data.get("internship", "No")
 
-    skills = str(data.get("skills", ""))
-    internship = str(data.get("internship", "No"))
-
-    score, role = predict(cgpa, skills, internship)
+    score, result = predict(
+        cgpa,
+        skills,
+        internship
+    )
 
     return jsonify({
-        "placement_probability": score,
-        "recommended_role": role
+        "score": score,
+        "prediction": result
     })
 
+
 if __name__ == "__main__":
-    print("Python prediction service running at http://localhost:5000")
-    app.run(host="127.0.0.1", port=5000, debug=False)
+
+    print("Python Prediction Server Started")
+    print("Running on http://127.0.0.1:5000")
+
+    app.run(
+        host="127.0.0.1",
+        port=5000,
+        debug=True
+    )

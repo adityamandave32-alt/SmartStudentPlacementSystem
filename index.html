@@ -1,64 +1,155 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
     <title>Smart Student Placement System</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f2f6fc;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 600px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px #aaa;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1d4ed8;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px;
+            width: 100%;
+            background: #1d4ed8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #153eaa;
+        }
+
+        #message {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Smart Student Placement & Career Management System</h1>
-    <hr>
 
-    <h2>Add Student</h2>
-    <form action="/add" method="post">
-        Name:
-        <input type="text" name="name" required><br><br>
+<div class="container">
 
-        Email:
-        <input type="email" name="email" required><br><br>
+    <h1>Smart Student Placement</h1>
 
-        CGPA:
-        <input type="number" name="cgpa" min="0" max="10" step="0.01" required><br><br>
+    <h2>Student Information</h2>
 
-        Skills:
-        <input type="text" name="skills" placeholder="Java, Python, HTML"><br><br>
+    <form id="studentForm">
 
-        Internship:
-        <select name="internship">
-            <option value="No">No</option>
+        <label>Name</label>
+        <input type="text" id="name" required>
+
+        <label>Email</label>
+        <input type="email" id="email" required>
+
+        <label>CGPA</label>
+        <input type="number" id="cgpa" step="0.01" min="0" max="10" required>
+
+        <label>Skills</label>
+        <input type="text" id="skills" placeholder="Java, Python, HTML" required>
+
+        <label>Internship</label>
+        <select id="internship">
             <option value="Yes">Yes</option>
-        </select><br><br>
+            <option value="No">No</option>
+        </select>
 
-        <input type="submit" value="Save Student">
+        <button type="submit">Add Student</button>
+
     </form>
 
-    <hr>
+    <div id="message"></div>
 
-    <h2>Placement Prediction</h2>
-    <p>Enter student details. Java sends the data to Python, and Python returns the prediction.</p>
+    <a href="/students" target="_blank">View Student Records</a>
 
-    <form action="/predict" method="post">
-        CGPA:
-        <input type="number" name="cgpa" min="0" max="10" step="0.01" required><br><br>
+</div>
 
-        Skills:
-        <input type="text" name="skills" placeholder="Java, Python, HTML"><br><br>
+<script>
 
-        Internship:
-        <select name="internship">
-            <option value="No">No</option>
-            <option value="Yes">Yes</option>
-        </select><br><br>
+document.getElementById("studentForm").addEventListener("submit", async function(event) {
 
-        <input type="submit" value="Predict">
-    </form>
+    event.preventDefault();
 
-    <hr>
-    <h2>Other Options</h2>
-    <p><a href="/students">View Student Records</a></p>
+    const student = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        cgpa: document.getElementById("cgpa").value,
+        skills: document.getElementById("skills").value,
+        internship: document.getElementById("internship").value
+    };
 
-    <p>
-        <b>Project flow:</b>
-        HTML → Java → Python → Java → HTML
-    </p>
+    try {
+
+        const response = await fetch("/addStudent", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(student)
+        });
+
+        const result = await response.text();
+
+        document.getElementById("message").innerHTML = result;
+
+        document.getElementById("studentForm").reset();
+
+    } catch (error) {
+
+        document.getElementById("message").innerHTML =
+            "Error: Server is not running.";
+
+    }
+
+});
+
+</script>
+
 </body>
+------
 </html>
